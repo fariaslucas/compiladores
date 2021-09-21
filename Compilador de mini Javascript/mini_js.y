@@ -32,32 +32,43 @@ int linha = 1;
 
 %}
 
-%token NUM ID LET STR IF ELSE WHILE FOR IGUAL
+%token NUM ID LET STR IF ELSE WHILE FOR
 
 // Start indica o símbolo inicial da gramática
 %start S
+
+// Associatividade e precedência
+%right '=' 
+%nonassoc '<' '>' IGUAL
+%left '+' '-'
+%left '*' '/' '%'
 
 %%
 
 S : CMDs { imprime( resolve_enderecos( $1.c ) ); }
   ;
 
-CMDs : CMD ';' CMDs   { $$.c = $1.c + $3.c; }
-     |                { $$.c = vazio; }
+CMDs : CMD ';' CMDs { $$.c = $1.c + $3.c; }
+     | CMDEST CMDs  { $$.c = $1.c + $2.c; }
+     |              { $$.c = vazio; }
      ;
 
-CMD : ATR               { $$.c = $1.c + "^"; }
-    | LET DECVARs       { $$ = $2; }
-    | IF '(' R ')' BODY ELSEs            { string then = gera_label( "then" );
-                                           string endif = gera_label( "end_if" );
-                                           $$.c = $3.c + then + "?" + $6.c + endif + "#" + (":" + then) + $5.c + (":" + endif); }
+CMD : ATR           { $$.c = $1.c + "^"; }
+    | LET DECLVARs  { $$ = $2; }
     ;
 
-DECVARs : DECVAR ',' DECVARs { $$.c = $1.c + $3.c; }
-        | DECVAR
-        ;
+CMDEST : IF '(' E ')' BODY ELSEs            { string then = gera_label( "then" );
+                                              string endif = gera_label( "end_if" );
+                                              $$.c = $3.c + then + "?" + $6.c + endif + "#" + (":" + then) + $5.c + (":" + endif); }
+       | WHILE '(' E ')' BODY               { string then = gera_label( "then" );
+                                              string endwhile = gera_label( "end_while" );
+                                              $$.c = vazio + (":" + then) + $3.c + "!" + endwhile + "?" + $5.c + then + "#" + (":" + endwhile); }
 
-DECVAR  : ID '=' R { $$.c = $1.c + "&" + $1.c + $3.c + "=" + "^"; }
+DECLVARs : DECLVAR ',' DECLVARs { $$.c = $1.c + $3.c; }
+         | DECLVAR
+         ;
+
+DECLVAR : ID '=' E { $$.c = $1.c + "&" + $1.c + $3.c + "=" + "^"; }
         | ID       { $$.c = $1.c + "&"; }
         ;
 
@@ -70,22 +81,19 @@ BODY : CMD ';'      { $$.c + $1.c; }
      ;
 
 ATR : ID '=' ATR { $$.c = $1.c + $3.c + "="; }
-    | R
+    | E
     ;
 
-R : E '<' E { $$.c = $1.c + $3.c + "<"; }
-  | E '>' E { $$.c = $1.c + $3.c + ">"; }
-  | E
-  ;
-
-E : E '+' T { $$.c = $1.c + $3.c + "+"; }
-  | E '-' T { $$.c = $1.c + $3.c + "-"; }
-  | T
-  ;
-
-T : T '*' F { $$.c = $1.c + " " + $3.c + "*"; }
-  | T '/' F { $$.c = $1.c + " " + $3.c + "/"; }
+E : ID '=' E      { $$.c = $1.c + $3.c + "="; }
+  | E '<' E       { $$.c = $1.c + $3.c + "<"; }
+  | E '>' E       { $$.c = $1.c + $3.c + ">"; }
+  | E IGUAL E     { $$.c = $1.c + $3.c + "=="; }
+  | E '+' E       { $$.c = $1.c + $3.c + "+"; }
+  | E '-' E       { $$.c = $1.c + $3.c + "-"; }
+  | E '*' E       { $$.c = $1.c + $3.c + "*"; }
+  | E '/' E       { $$.c = $1.c + $3.c + "/"; }
   | F
+  ;
 
 F : ID          { $$.c = $1.c + "@"; }
   | NUM         { $$.c = $1.c; }
