@@ -25,10 +25,7 @@ vector<string> operator+( vector<string> a, string b );
 string gera_label( string prefixo );
 vector<string> resolve_enderecos( vector<string> entrada );
 void  imprime( vector<string> codigo );
-
 vector<string> vazio;
-
-int linha = 1;
 
 %}
 
@@ -78,13 +75,20 @@ ELSEs : ELSE BODY { $$ = $2; }
 
 BODY : CMD ';'      { $$.c + $1.c; }
      | '{' CMDs '}' { $$ = $2; }
+     | CMDEST
      ;
 
-ATR : ID '=' ATR { $$.c = $1.c + $3.c + "="; }
+ATR : ID '=' ATR      { $$.c = $1.c + $3.c + "="; }
+    | IDPROP '=' ATR  { $$.c = $1.c + $3.c + "[=]"; }
     | E
     ;
 
+IDPROP : E '[' E ']' { $$.c = $1.c + $3.c; }
+       | E '.' ID    { $$.c = $1.c + $3.c; }
+       ;
+
 E : ID '=' E      { $$.c = $1.c + $3.c + "="; }
+  | IDPROP '=' E  { $$.c = $1.c + $3.c + "[=]"; }
   | E '<' E       { $$.c = $1.c + $3.c + "<"; }
   | E '>' E       { $$.c = $1.c + $3.c + ">"; }
   | E IGUAL E     { $$.c = $1.c + $3.c + "=="; }
