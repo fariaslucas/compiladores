@@ -60,6 +60,10 @@ CMDEST : IF '(' E ')' BODY ELSEs            { string then = gera_label( "then" )
        | WHILE '(' E ')' BODY               { string then = gera_label( "then" );
                                               string endwhile = gera_label( "end_while" );
                                               $$.c = vazio + (":" + then) + $3.c + "!" + endwhile + "?" + $5.c + then + "#" + (":" + endwhile); }
+       | FOR '(' CMD ';' E ';' ATR ')' BODY { string then = gera_label( "then" );
+                                              string endfor = gera_label( "end_for" );
+                                              $$.c = $3.c + (":" + then) + $5.c + "!" + endfor + "?" + $9.c + $7.c + "^" + then + "#" + (":" + endfor); }  
+       ;
 
 DECLVARs : DECLVAR ',' DECLVARs { $$.c = $1.c + $3.c; }
          | DECLVAR
