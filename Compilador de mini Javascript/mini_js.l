@@ -1,4 +1,4 @@
-WS      [ \n\t]
+WS      [ \t]
 
 DIG     [0-9]
 LETRA   [A-Za-z_]
@@ -10,6 +10,8 @@ STR     (\"([^\"\n]|(\\\")|\"\")+\")|('([^'\n]|''|\\')*')
 %%
 
 {WS}		{ /* ignora espaços e tabs */ }
+
+"\n"        { linha++; }
 
 {STR} 	    { yylval.c = vazio + yytext; 
               return STR; }
