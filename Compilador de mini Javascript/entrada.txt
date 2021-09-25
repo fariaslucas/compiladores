@@ -1,5 +1,4 @@
-while( a > b ) {
-    i = i + 1;
-    h = i*7;
+let a = {}, campo = "c";
+for( let i = 0; i < 6; i = i + 2 ) {
+  a[campo = campo + i] = i;
 }
-c = a;
