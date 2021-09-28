@@ -90,7 +90,7 @@ ELSEs : ELSE BODY { $$ = $2; }
       |           { $$.c = vazio; }
       ;
 
-BODY : CMD ';'      { $$.c + $1.c; }
+BODY : CMD ';'      { $$.c = $1.c; }
      | '{' CMDs '}' { $$ = $2; }
      | CMDEST
      ;
